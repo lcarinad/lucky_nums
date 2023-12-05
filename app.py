@@ -1,7 +1,14 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
+
+from models import db, connect_db, User
 
 app = Flask(__name__)
 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///lucky_nums_db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = "oh-so-secret"
+
+connect_db(app)
 
 @app.route("/")
 def homepage():
@@ -9,17 +16,24 @@ def homepage():
 
     return render_template("index.html")
 
+# *****************************
+# RESTFUL JSON API
+# *****************************
+
 @app.route('/api/get-lucky-num', methods=['GET', 'POST'])
 def create_lucky_num_profile():
     """Create lucky num from user form data & return it.
-    Return JSON {'user':{id, name, email, birth_year, fave_color}}"""
+    Return JSON {'user':{id, name, email, year, color}}"""
 
     name = request.json["name"]
     email = request.json["email"]
-    birth_year = request.json["birth_year"]
-    fave_color = request.json["fave_color"]
+    year = request.json["year"]
+    color = request.json["color"]
 
-    new_user = User(name=name, email=email, birth_year=birth_year, fave_color=fave_color)
+    new_user = User(name=name, email=email, year=year, color=color)
 
+    db.session.add(new_user)
+    db.session.commit()
+    response_json = jsonify(new_user.serialize())
 
-    return
+    return response_json
