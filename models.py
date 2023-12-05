@@ -1,4 +1,4 @@
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, CheckConstraint
 
 db = SQLAlchemy()
 
@@ -14,6 +14,11 @@ class User(db.Model):
     year=db.Column(db.Integer, nullable=False)
     email = db.Column(db.Text, nullable=False, unique=True)
     color = db.Column(db.Text, nullable = False)
+
+    __table_args__ = (
+        CheckConstraint('year BETWEEN 1900 AND 2000', name='check_birth_year'),CheckConstraint("color IN ('red', 'green', 'orange', 'blue')", name="check_color"),
+    )
+    
 
     def serialize(self):
         """Returns a dict representation of user instance, which allows us to turn to JSON.  From the dict representation, the instance can be jsonified"""
