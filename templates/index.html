@@ -4,12 +4,6 @@
   <title>LuckyNum</title>
   <script src="https://unpkg.com/jquery"></script>
 </head>
-<body>
-  {% for category, message in get_flashed_messages(with_categories=True) %}
-<div class="container">
-  <div class="alert alert-{{category}}">{{message}}</div>
-  {% endfor %}
-</div>
 
 <form id="lucky-form" action="/api/get-lucky-num" method="post">
   <div>Name: <input id="name"> <b id="name-err"></b> </div>

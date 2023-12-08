@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint
 from flask import jsonify, request
+import random, requests
 
 db = SQLAlchemy()
 
@@ -38,7 +39,7 @@ class User(db.Model):
             errors['color'] = ['Invalid value, must be red, green, orange, or blue']
         
         if errors:
-            return jsonify({"errors": errors}), 400
+            return (jsonify({"errors": errors}), 400)
 
         #if validations pass, create and save User
         name = request.json["name"]
@@ -47,6 +48,11 @@ class User(db.Model):
         color = request.json["color"]
 
         new_user = User(name=name, email=email, year=year, color=color)
+
+        db.session.add(new_user)
+        db.session.commit()
+        
+        new_user=new_user.serialize()
         return new_user
 
     def serialize(self):
@@ -59,6 +65,23 @@ class User(db.Model):
             "email": self.email,
             "color": self.color
         }
-    
+
     def __repr__(self):
         return f"<User {self.id} name={self.name} year={self.year} email={self.email} fave_color={self.color}>"
+    
+    def get_lucky_num(user):
+        num_rand_num=random.randint(1, 100)
+        num_res = requests.get(f"http://numbersapi.com/{num_rand_num}")
+        num_fact = num_res.text
+
+        year_year = user['year']
+        year_res=requests.get(f"http://numbersapi.com/{year_year}/year")
+        year_fact=year_res.text
+
+        response = {
+            "num": {"fact": num_fact, "num": num_rand_num},
+            "year": {"fact": year_fact, "year": year_year}
+        }
+        return response
+
+
