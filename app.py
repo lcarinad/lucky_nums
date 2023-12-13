@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify, flash
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, DataError
 from models import db, connect_db, User
 app = Flask(__name__)
 
@@ -26,7 +26,45 @@ def get_lucky_num():
     """Create lucky num from user form data & return it.
     Return JSON {
         'num':{fact:'rand fact', num:67}, "year":{"fact:"randfact", "year":birthyear}"""
-    new_user=User.validate()
-    lucky_num=User.get_lucky_num(new_user)
-    return lucky_num
+    errors = {}
+    try:
+        required_fields=['name', 'year', 'email', 'color']
+        for field in required_fields:
+            if not request.json.get(field) or request.json[field] == '':
+                errors[field]=['Input required']
+        
+        if errors:
+            return jsonify({"errors":errors}), 400
+
+        new_user=User(name=request.json["name"],year=request.json["year"], email=request.json["email"],color=request.json["color"] )
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        lucky_num=User.get_lucky_num(new_user)
+
+        return lucky_num, 201
+    
+    except (IntegrityError, DataError):
+
+        print(f"**************************{type(request.json)}****************")
+        if 'name' not in request.json:
+            errors['name'] = ['This field is required']
+        if 'email' not in request.json:
+            errors['email'] = ['This field is required']
+        if 'year' not in request.json:
+            errors['year'] = ['This field is required']
+        if request.json['year'] not in range(1900,2000):
+            errors['year'] = ['Invalid year. Birth year should be between 1900-2000']
+        if 'color' not in request.json:
+            errors['color'] = ['This field is required']
+        if request.json['color'] not in ['red', 'green', 'orange', 'blue']:
+            errors['color'] = ['Invalid value, must be red, green, orange, or blue']
+        
+        db.session.rollback()
+
+        return jsonify({"errors": errors}), 400
+
+    
+   
     
