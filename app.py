@@ -31,10 +31,10 @@ def get_lucky_num():
         required_fields=['name', 'year', 'email', 'color']
         for field in required_fields:
             if not request.json.get(field) or request.json[field] == '':
-                errors[field]=['Input required']
-        
+                errors[field]=['Input required'] 
         if errors:
             return jsonify({"errors":errors}), 400
+
 
         new_user=User(name=request.json["name"],year=request.json["year"], email=request.json["email"],color=request.json["color"] )
 
@@ -46,14 +46,6 @@ def get_lucky_num():
         return lucky_num, 201
     
     except (IntegrityError, DataError):
-
-        print(f"**************************{type(request.json)}****************")
-        if 'name' not in request.json:
-            errors['name'] = ['This field is required']
-        if 'email' not in request.json:
-            errors['email'] = ['This field is required']
-        if 'year' not in request.json:
-            errors['year'] = ['This field is required']
         if request.json['year'] not in range(1900,2000):
             errors['year'] = ['Invalid year. Birth year should be between 1900-2000']
         if 'color' not in request.json:

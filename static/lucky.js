@@ -8,7 +8,7 @@ async function processForm(evt) {
     let color = $("#color").val();
     try{
     let res = await axios.post('http://127.0.0.1:5000/api/get-lucky-num',{name, year, email, color} )
-
+    
     handleResponse(res)
 } catch(error){
         handleResponse(error.response)}
@@ -17,7 +17,7 @@ async function processForm(evt) {
 /** handleResponse: deal with response from our lucky-num API. */
 
 function handleResponse(res) {
-    console.log(res)
+
     if (res.status == 201){    
         let lucky_num=res.data.num.num;
         let num_fact=res.data.num.fact;
@@ -34,7 +34,8 @@ function handleResponse(res) {
 
         });
     }
-    // $("#lucky-form")[0].reset();
+
 }
+
 
 $("#lucky-form").on("submit", processForm);
